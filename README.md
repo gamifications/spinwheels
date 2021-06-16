@@ -7,3 +7,4 @@
 	npm start
 
 <https://www.lijinke.cn/react-turntable/>
+<https://github.com/muzqi/canvas-luckyDraw>
