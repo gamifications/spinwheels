@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title></title>
+</head>
+<body>
+	<div id="spin_button" style="position: absolute;left: 232px;top: 232px;width: 50px;height: 50px;line-height: 50px;text-align: center;background: yellow;border-radius: 100%;cursor: pointer">Start</div>
+    <canvas id="canvas" width="500" height="500"></canvas>
+
+    <script>
+    let canvas = document.getElementById('canvas'),
+        context = canvas.getContext('2d'),
+
+        OUTSIDE_RADIUAS = 200,   
+        INSIDE_RADIUAS = 0,      
+        TEXT_RADIUAS = 160,      
+
+        CENTER_X = canvas.width / 2,
+        CENTER_Y = canvas.height / 2,
+
+        awards = [               
+            'redmi 9a', 'samsung m11', 'iphone 12', 'amazon pay 10', 'book', 'bag', 'iphone 20', 'pencil'
+        ],
+
+        startRadian = 0,                             
+        awardRadian = (Math.PI * 2) / awards.length, 
+
+        duration = 4000,     
+        velocity = 10,       
+        spinningTime = 0,    
+        spinTotalTime,       
+        spinningChange;      
+
+    function easeOut(t, b, c, d) {
+        if ((t /= d / 2) < 1) return c / 2 * t * t + b;
+        return -c / 2 * ((--t) * (t - 2) - 1) + b;
+    };
+
+    function drawRouletteWheel() {
+        
+        context.clearRect(0, 0, canvas.width, canvas.height);
+        
+
+        for (let i = 0; i < awards.length; i ++) {
+            let _startRadian = startRadian + awardRadian * i,  
+                _endRadian =   _startRadian + awardRadian;     
+            
+            
+            context.save();
+            if (i % 2 === 0) context.fillStyle = '#FF6766'
+            else             context.fillStyle = '#FD5757';
+            context.beginPath();
+            context.arc(canvas.width / 2, canvas.height / 2, OUTSIDE_RADIUAS, _startRadian, _endRadian, false);
+            context.arc(canvas.width / 2, canvas.height / 2, INSIDE_RADIUAS, _endRadian, _startRadian, true);
+            context.fill();
+            context.restore();
+            
+
+            
+            context.save();
+            context.font = 'bold 16px Helvetica, Arial';
+            context.fillStyle = '#FFF';
+            context.translate(
+                CENTER_X + Math.cos(_startRadian + awardRadian / 2) * TEXT_RADIUAS,
+                CENTER_Y + Math.sin(_startRadian + awardRadian / 2) * TEXT_RADIUAS
+            );
+            context.rotate(_startRadian + awardRadian / 2 + Math.PI / 2);
+            context.fillText(awards[i], -context.measureText(awards[i]).width / 2, 0);
+            context.restore();
+            
+        }
+        
+        
+        context.save();
+        context.beginPath();
+        context.moveTo(CENTER_X, CENTER_Y - OUTSIDE_RADIUAS + 8);
+        context.lineTo(CENTER_X - 10, CENTER_Y - OUTSIDE_RADIUAS);
+        context.lineTo(CENTER_X - 4, CENTER_Y - OUTSIDE_RADIUAS);
+        context.lineTo(CENTER_X - 4, CENTER_Y - OUTSIDE_RADIUAS - 10);
+        context.lineTo(CENTER_X + 4, CENTER_Y - OUTSIDE_RADIUAS - 10);
+        context.lineTo(CENTER_X + 4, CENTER_Y - OUTSIDE_RADIUAS);
+        context.lineTo(CENTER_X + 10, CENTER_Y - OUTSIDE_RADIUAS);
+        context.closePath();
+        context.fill();
+        context.restore();
+        
+    }
+
+    function rotateWheel() {
+        
+        spinningTime += 20;
+        if (spinningTime >= spinTotalTime) {
+            console.log(getValue()); return
+        }
+
+        let _spinningChange = (spinningChange - easeOut(spinningTime, 0, spinningChange, spinTotalTime)) * (Math.PI / 180);
+        startRadian += _spinningChange
+
+        drawRouletteWheel();
+        window.requestAnimationFrame(rotateWheel);
+    }
+
+    function getValue() {
+        let startAngle = startRadian * 180 / Math.PI,       
+            awardAngle = awardRadian * 180 / Math.PI,
+
+            pointerAngle = 90,                              
+            overAngle = (startAngle + pointerAngle) % 360,  
+            restAngle = 360 - overAngle,                    
+
+            index = Math.floor(restAngle / awardAngle);     
+        
+        return awards[index];
+    }
+
+
+    window.onload = function(e) {
+        drawRouletteWheel();
+    }
+
+    document.getElementById('spin_button').addEventListener('click', () => {
+        spinningTime = 0;                                
+        spinTotalTime = Math.random() * 3 + duration;    
+        spinningChange = Math.random() * 10 + velocity;  
+        rotateWheel();
+    })
+</script>
+</body>
+</html>
